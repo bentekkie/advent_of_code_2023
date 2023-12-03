@@ -9,38 +9,47 @@ THIS_DIR = pathlib.Path(__file__).parent.resolve()
 class Round:
     red: int
     green: int
-    blue : int
+    blue: int
+
 
 @dataclass
 class Game:
     id_num: int
     rounds: list[Round]
 
+
 def parse_round(line: str):
-    red, green, blue = 0,0,0
+    r = Round(0, 0, 0)
     for part in line.split(","):
         num, color = part.strip().split(" ")
         if color == "red":
-            red = int(num)
+            r.red = int(num)
         elif color == "green":
-            green = int(num)
+            r.green = int(num)
         elif color == "blue":
-            blue = int(num)
+            r.blue = int(num)
         else:
             raise ValueError(line, part)
-    return Round(red, green, blue)
+    return r
+
 
 def parse_game(line: str):
     game_part, round_part = line.split(":")
-    id_num = int(game_part.removeprefix("Game "))
-    rounds = [parse_round(l) for l in round_part.strip().split(";")]
-    return Game(id_num, rounds)
+    return Game(
+        int(game_part.removeprefix("Game ")),
+        [parse_round(l) for l in round_part.strip().split(";")],
+    )
+
 
 s = 0
 with open(os.path.join(THIS_DIR, "input.txt")) as f:
     for line in f.readlines():
         game = parse_game(line)
-        power = max(r.red for r in game.rounds)*max(r.green for r in game.rounds)*max(r.blue for r in game.rounds)
+        power = (
+            max(r.red for r in game.rounds)
+            * max(r.green for r in game.rounds)
+            * max(r.blue for r in game.rounds)
+        )
         s += power
 
 print(s)

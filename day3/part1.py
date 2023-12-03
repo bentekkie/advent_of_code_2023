@@ -4,11 +4,25 @@ import os
 
 THIS_DIR = pathlib.Path(__file__).parent.resolve()
 
-grid : list[str]= []
+grid: list[str] = []
 
 with open(os.path.join(THIS_DIR, "input.txt")) as f:
     for line in f.readlines():
         grid.append(line.strip())
+
+
+def neighbors(i: int, j_start: int, j_end: int):
+    if j_start > 0:
+        j_start -= 1
+        yield grid[i][j_start]
+    if j_end < len(grid[i]):
+        yield grid[i][j_end]
+        j_end += 1
+    if i > 0:
+        yield from grid[i - 1][j_start:j_end]
+    if i + 1 < len(grid):
+        yield from grid[i + 1][j_start:j_end]
+
 
 s = 0
 for i, row in enumerate(grid):
@@ -18,23 +32,8 @@ for i, row in enumerate(grid):
             start = j
             while j < len(row) and row[j].isdigit():
                 j += 1
-            candidate = ""
-            num = int(row[start:j])
-            if start > 0:
-                start -= 1
-                candidate += row[start]
-            end = j
-            if end < len(row):
-                end += 1
-                candidate += row[end - 1]
-            if i > 0:
-                candidate += grid[i-1][start:end]
-            if i + 1 < len(grid):
-                candidate += grid[i+1][start:end]
-            
-            if any(not c.isdigit() and c != "." for c in candidate):
-                s += num
-
+            if any(not c.isdigit() and c != "." for c in neighbors(i, start, j)):
+                s += int(row[start:j])
         else:
             j += 1
 print(s)
