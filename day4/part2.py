@@ -2,7 +2,7 @@ import pathlib
 import os
 from dataclasses import dataclass
 from functools import cached_property
-
+from collections import defaultdict
 THIS_DIR = pathlib.Path(__file__).parent.resolve()
 
 
@@ -27,14 +27,17 @@ def parse_card(line : str):
     nums = [int(s.strip()) for s in nums_part.split()]
     return Card(int(id_part), nums, winning_nums)
 
-cards: dict[int,Card] = dict()
-to_process : list[int] = []
+instances = defaultdict(int)
+s = 0
 with open(os.path.join(THIS_DIR, "input.txt")) as f:
         for line in f.readlines():
              c = parse_card(line)
-             cards[c.id_num] = c
-             to_process.append(c.id_num)
-
+             instances[c.id_num] += 1
+             s += instances[c.id_num]
+             for i in range(c.id_num+1, c.id_num+c.matches+1):
+                instances[i] += instances[c.id_num]
+print(s)
+'''
 while len(to_process) > 0:
     new_process = []
     for id in to_process:
@@ -46,4 +49,4 @@ while len(to_process) > 0:
 
 print(sum(c.count for c in cards.values()))
 
-
+'''
