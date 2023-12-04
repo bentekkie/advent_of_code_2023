@@ -37,16 +37,3 @@ with open(os.path.join(THIS_DIR, "input.txt")) as f:
              for i in range(c.id_num+1, c.id_num+c.matches+1):
                 instances[i] += instances[c.id_num]
 print(s)
-'''
-while len(to_process) > 0:
-    new_process = []
-    for id in to_process:
-          cards[id].count += 1
-          m = cards[id].matches
-          if m > 0:
-               new_process.extend(id+x for x in range(1,m+1))
-    to_process = new_process
-
-print(sum(c.count for c in cards.values()))
-
-'''
