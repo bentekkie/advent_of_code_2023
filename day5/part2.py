@@ -29,15 +29,15 @@ class TransRange:
     def to_end(self):
         return self.to_start + self.length
 
-    def convert_int(self, input):
+    def convert_int(self, input: int):
         return self.to_start + (input - self.from_start)
 
     def convert_range(
         self, input: SimpleRange
     ) -> tuple[SimpleRange | None, list[SimpleRange]]:
-        if input.start >= self.from_start and input.end <= self.from_end:
+        if self.from_start <= input.start and input.end <= self.from_end:
             return SimpleRange(self.convert_int(input.start), input.length), []
-        if input.start < self.from_start and input.end > self.from_end:
+        if input.start < self.from_start and self.from_end < input.end:
             return SimpleRange(self.to_start, self.length), [
                 SimpleRange(input.start, self.from_start - input.start),
                 SimpleRange(self.from_start, input.end - self.from_end),
