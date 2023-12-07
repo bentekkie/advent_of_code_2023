@@ -11,7 +11,7 @@ card_order = "AKQT98765432J"
 
 def hand_rank(cards: str):
      if "J" in cards:
-          return max(hand_rank(cards.replace("J", c)) for c in card_order[:-1])
+          return max(hand_rank(cards.replace("J", c, 1)) for c in card_order[:-1])
      c = Counter(cards)
      l = c.most_common(2)
      if l[0][1] == 5:
