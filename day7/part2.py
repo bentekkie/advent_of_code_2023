@@ -3,7 +3,6 @@ import os
 from collections import Counter
 from functools import cached_property
 from dataclasses import dataclass
-from math import sqrt, floor, ceil, prod
 
 THIS_DIR = pathlib.Path(__file__).parent.resolve()
 
