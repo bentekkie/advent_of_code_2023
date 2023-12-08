@@ -1,31 +1,36 @@
 import pathlib
 import os
 from collections import Counter
-from functools import cached_property
+from functools import cached_property, cache
 from dataclasses import dataclass
 
 THIS_DIR = pathlib.Path(__file__).parent.resolve()
 
 card_order = "AKQT98765432J"
+j_cards = card_order[:-1]
 
+def expand_jokers(cards: str):
+    out = [""]
+    for c in cards:
+        out = [s+k for s in out for k in (j_cards if c == "J" else c)]
+    return out
 
+@cache
 def hand_rank(cards: str):
     if "J" in cards:
-        return max(hand_rank(cards.replace("J", c, 1)) for c in card_order[:-1])
+        return max(hand_rank(c) for c in expand_jokers(cards))
     c = Counter(cards)
     l = c.most_common(2)
-    if l[0][1] == 5:
+    f = l[0][1]
+    if f == 5:
         return 7
-    if l[0][1] == 4:
+    s = l[1][1]
+    if f == 4:
         return 6
-    if l[0][1] == 3 and l[1][1] == 2:
-        return 5
-    if l[0][1] == 3:
-        return 4
-    if l[0][1] == 2 and l[1][1] == 2:
-        return 3
-    if l[0][1] == 2:
-        return 2
+    if f == 3:
+        return 4 + (s == 2)
+    if f == 2:
+        return 2 + (s == 2)
     return 1
 
 
@@ -34,7 +39,7 @@ class Hand:
     cards: str
     bid: int
 
-    @cached_property
+    @property
     def hand_type(self):
         return hand_rank(self.cards)
 
