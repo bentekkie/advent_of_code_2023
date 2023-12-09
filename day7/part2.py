@@ -9,11 +9,13 @@ THIS_DIR = pathlib.Path(__file__).parent.resolve()
 card_order = "AKQT98765432J"
 j_cards = card_order[:-1]
 
+
 def expand_jokers(cards: str):
     out = [""]
     for c in cards:
-        out = [s+k for s in out for k in (j_cards if c == "J" else c)]
+        out = [s + k for s in out for k in (j_cards if c == "J" else c)]
     return out
+
 
 @cache
 def hand_rank(cards: str):

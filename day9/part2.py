@@ -1,14 +1,12 @@
 import pathlib
 import os
-from collections import Counter
-from functools import cached_property, cache
-from dataclasses import dataclass
+from operator import sub
 
 THIS_DIR = pathlib.Path(__file__).parent.resolve()
 
 
-def extrap(seq: list[int]):
-    return 0 if not any(seq) else seq[0] - extrap([n - c for c, n in zip(seq, seq[1:])])
+def extrap(s: list[int]):
+    return 0 if not any(s) else s[0] - extrap(list(map(sub, s[1:], s)))
 
 
 with open(os.path.join(THIS_DIR, "input.txt")) as f:
