@@ -1,8 +1,30 @@
 import pathlib
 import os
+from math import lcm
+from modint import chinese_remainder
 
 THIS_DIR = pathlib.Path(__file__).parent.resolve()
-
+from functools import reduce
+def chinese_remainder_bad(m, a):
+    sum = 0
+    prod = reduce(lambda acc, b: acc*b, m)
+    for n_i, a_i in zip(m, a):
+        p = prod // n_i
+        sum += a_i * mul_inv(p, n_i) * p
+    return sum % prod
+ 
+ 
+ 
+def mul_inv(a, b):
+    b0 = b
+    x0, x1 = 0, 1
+    if b == 1: return 1
+    while a > 1:
+        q = a // b
+        a, b = b, a%b
+        x0, x1 = x1 - q * x0, x0
+    if x1 < 0: x1 += b0
+    return x1
 
 def find_loop(start, ends, graph, instructions):
     seen = set()
@@ -75,13 +97,11 @@ def extended_gcd(a, b):
 
 def find_min(starts, ends, graph, instructions):
     loops = [find_loop(start, ends, graph, instructions) for start in starts]
-    print(loops)
-    phase, period = -loops[0][1], loops[0][0]
+    phase, period = loops[0][1], loops[0][0]
     for loop in loops[1:]:
-        period, phase = combine_phased_rotations(period, phase, loop[1], -loop[0])
+        period, phase = combine_phased_rotations(period, phase, loop[1], loop[0])
 
     return -phase % period
-
 
 with open(os.path.join(THIS_DIR, "input.txt")) as f:
     lines = f.readlines()
@@ -95,5 +115,5 @@ with open(os.path.join(THIS_DIR, "input.txt")) as f:
 
 starts = {s for s in graph.keys() if s.endswith("A")}
 ends = {s for s in graph.keys() if s.endswith("Z")}
-
+print(lcm(*[find_loop(start, ends, graph, instructions)[1]//2 for start in starts]))
 print(find_min(starts, ends, graph, instructions))
