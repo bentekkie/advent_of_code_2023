@@ -41,7 +41,7 @@ s = 0
 with open(os.path.join(THIS_DIR, "input.txt")) as f:
     for full_line in f.readlines():
         line, raw_sizes = full_line.strip().split(" ")
-        sizes = [int(x) for x in raw_sizes.split(",")]
+        sizes = tuple(int(x) for x in raw_sizes.split(","))
         s += combs(line, sizes)
 
 print(s)
