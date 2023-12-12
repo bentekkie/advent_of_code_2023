@@ -2,34 +2,43 @@ import pathlib
 import os
 from collections import defaultdict
 from itertools import combinations
+from typing import Iterable, TypeVar
 
 THIS_DIR = pathlib.Path(__file__).parent.resolve()
 scale = 1000000
-with open(os.path.join(THIS_DIR, "input.txt")) as f:
-    raw_grid = [l.strip() for l in f.readlines()]
-    galaxies = []
-    row = 0
-    effective_row = 0
-    while row < len(raw_grid):
-        if all(c == "." for c in raw_grid[row]):
-            effective_row += scale
-        else:
-            col = 0
-            effective_col = 0
-            while col < len(raw_grid[row]):
-                if all(raw_grid[r][col] == "." for r in range(len(raw_grid))):
-                    effective_col += scale
-                else:
-                    if raw_grid[row][col] == "#":
-                        galaxies.append((effective_row, effective_col))
-                    effective_col += 1
-                col += 1
-            effective_row += 1
-        row += 1
 
 
 def dist(a, b):
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
 
-print(sum(dist(a, b) for a, b in combinations(galaxies, 2)))
+def enumerate_2d(grid: Iterable[Iterable]):
+    for r, row in enumerate(grid):
+        for c, entry in enumerate(row):
+            yield r, c, entry
+
+
+with open(os.path.join(THIS_DIR, "input.txt")) as f:
+    grid = [l.strip() for l in f.readlines()]
+    ers = [r for r, line in enumerate(grid) if not line.count("#")]
+    ecs = [c for c, line in enumerate(zip(*grid)) if not line.count("#")]
+    print(
+        sum(
+            map(
+                dist,
+                *zip(
+                    *combinations(
+                        (
+                            (
+                                r + (scale - 1) * sum(er < r for er in ers),
+                                c + (scale - 1) * sum(ec < c for ec in ecs),
+                            )
+                            for r, c, e in enumerate_2d(grid)
+                            if e == "#"
+                        ),
+                        2,
+                    )
+                )
+            )
+        )
+    )
