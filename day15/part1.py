@@ -1,7 +1,5 @@
 import pathlib
 import os
-import cmath
-from functools import cache
 
 THIS_DIR = pathlib.Path(__file__).parent.resolve()
 
@@ -16,7 +14,4 @@ def hash_step(step: str):
 
 
 with open(os.path.join(THIS_DIR, "input.txt")) as f:
-    raw = f.read()
-    steps = raw.strip().split(",")
-    print(sum(hash_step(s) for s in steps))
-print("rm-"[:-1])
+    print(sum(hash_step(s) for s in f.read().strip().split(",")))
