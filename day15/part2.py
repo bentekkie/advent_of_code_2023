@@ -31,16 +31,17 @@ class Lense:
 boxes: list[list[Lense]] = [[] for _ in range(256)]
 
 with open(os.path.join(THIS_DIR, "input.txt")) as f:
-    raw = f.read()
-    steps = raw.strip().split(",")
-    for step in steps:
+    for step in f.read().strip().split(","):
         if "=" in step:
             label, raw_val = step.split("=")
-            l = Lense(label, int(raw_val))
-            try:
-                boxes[l.h][boxes[l.h].index(l)] = l
-            except ValueError:
-                boxes[l.h].append(l)
+            val = int(raw_val)
+            h = hash_step(label)
+            for x in boxes[h]:
+                if x.label == label:
+                    x.focal = val
+                    break
+            else:
+                boxes[h].append(Lense(label, val))
         else:
             l = Lense(step[:-1], 0)
             try:
