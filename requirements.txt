@@ -1,0 +1,5 @@
+Dijkstar==2.6.0
+modint==0.4.0
+numpy==1.26.2
+shapely==2.0.2
+six==1.16.0
