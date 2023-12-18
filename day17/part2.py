@@ -36,5 +36,5 @@ for dir in ("r", "d"):
     g.add_edge(start, (0, 0, dir), 0)
 for dir in ("r", "l", "u", "d"):
     g.add_edge((len(grid) - 1, len(grid[0]) - 1, dir), end, 0)
-
+print(g.node_count, g.edge_count)
 print(find_path(g, start, end).total_cost)
