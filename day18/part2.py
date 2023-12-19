@@ -1,6 +1,7 @@
 import pathlib
 import os
 from shapely import Polygon
+from shapely.plotting import plot_polygon
 
 THIS_DIR = pathlib.Path(__file__).parent.resolve()
 
@@ -25,3 +26,4 @@ with open(os.path.join(THIS_DIR, "input.txt")) as f:
         points.append((x, y))
 p = Polygon(points)
 print(p.area + p.length / 2 + 1)
+plot_polygon(p, add_points=False)
