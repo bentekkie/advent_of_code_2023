@@ -46,7 +46,6 @@ class Conjunction:
 
     def process(self, p: str, pulse: bool):
         self.parents[p] = pulse
-        # print(self.parents)
         res = not all(self.parents.values())
         return [(c, res) for c in self.children]
 
@@ -69,31 +68,27 @@ all_nodes = (
 )
 
 
-def push_button():
+def push_button(ps):
     to_process = [("button", broadcast, False)]
-    c_highs = []
+    c_highs = set()
     while len(to_process) > 0:
         new_to_process = []
         for f, dest, pulse in to_process:
-            if f in conjunctions and pulse:
-                c_highs.append(f)
+            if f in ps and pulse:
+                c_highs.add(f)
             for new_dest, new_pulse in all_nodes[dest].process(f, pulse):
                 if new_dest in all_nodes:
                     new_to_process.append((dest, new_dest, new_pulse))
         to_process = new_to_process
     return c_highs
 
+pushes = 0
+periods = {p: 0 for p in parents[parents["rx"][0]]}
+while not all(periods.values()):
+    pushes += 1
+    c_high = push_button(periods.keys())
+    for p, v in periods.items():
+        if v == 0 and p in c_high:
+            periods[p] = pushes
 
-c_highs = []
-for i in range(10000):
-    c_high = push_button()
-    c_highs.append(c_high)
-
-print(
-    lcm(
-        *(
-            next(i for i, state in enumerate(c_highs) if x in state) + 1
-            for x in parents[parents["rx"][0]]
-        )
-    )
-)
+print(lcm(*periods.values()))
