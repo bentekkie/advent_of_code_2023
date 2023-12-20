@@ -1,16 +1,49 @@
 import pathlib
 import os
-from dataclasses import dataclass, field
-from enum import Enum
-from math import lcm
+from dataclasses import dataclass
+from collections import defaultdict
 
 
 THIS_DIR = pathlib.Path(__file__).parent.resolve()
 
-children: dict[str, list[str]] = {}
+
+@dataclass
+class FlipFlop:
+    children: list[str]
+    mem: bool = False
+
+    def process(self, p: str, pulse: bool):
+        if not pulse:
+            self.mem = not self.mem
+            return ((c, self.mem) for c in self.children)
+        return iter(())
+
+
+@dataclass
+class Conjunction:
+    children: list[str]
+    parents: dict[str, bool]
+    mem: bool = False
+
+    def process(self, p: str, pulse: bool):
+        self.parents[p] = pulse
+        res = not all(self.parents.values())
+        return ((c, res) for c in self.children)
+
+
+@dataclass
+class Broadcast:
+    children: list[str]
+
+    def process(self, p: str, pulse: bool):
+        return ((c, pulse) for c in self.children)
+
+
+children = dict[str, list[str]]()
+parents = defaultdict(list[str])
 broadcast = "broadcaster"
-flip_flops: list[str] = []
-conjunctions: list[str] = []
+flip_flops = list[str]()
+conjunctions = list[str]()
 
 with open(os.path.join(THIS_DIR, "input.txt")) as f:
     for line in f.readlines():
@@ -22,42 +55,8 @@ with open(os.path.join(THIS_DIR, "input.txt")) as f:
             f = f.removeprefix("&")
             conjunctions.append(f)
         children[f] = [s.strip() for s in t.split(",")]
-all_children = {c for cs in children.values() for c in cs}
-parents = {f: [p for p, cs in children.items() if f in cs] for f in all_children}
-
-
-@dataclass
-class FlipFlop:
-    children: list[str]
-    mem: bool = False
-
-    def process(self, p: str, pulse: bool):
-        if not pulse:
-            self.mem = not self.mem
-            return [(c, self.mem) for c in self.children]
-        return []
-
-
-@dataclass
-class Conjunction:
-    children: list[str]
-    parents: dict[str, bool]
-    mem: bool = False
-
-    def process(self, p: str, pulse: bool):
-        self.parents[p] = pulse
-        # print(self.parents)
-        res = not all(self.parents.values())
-        return [(c, res) for c in self.children]
-
-
-@dataclass
-class Broadcast:
-    children: list[str]
-
-    def process(self, p: str, pulse: bool):
-        return [(c, pulse) for c in self.children]
-
+        for c in children[f]:
+            parents[c].append(f)
 
 all_nodes = (
     {broadcast: Broadcast(children[broadcast])}
