@@ -160,3 +160,7 @@ cython_debug/
 #.idea/
 
 input.txt
+visualize.py
+viz.gif
+
+*_dns.py

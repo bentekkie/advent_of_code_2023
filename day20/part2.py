@@ -3,6 +3,7 @@ import os
 from collections import defaultdict
 from dataclasses import dataclass
 from math import lcm
+from typing import Iterable
 
 
 THIS_DIR = pathlib.Path(__file__).parent.resolve()
@@ -13,7 +14,7 @@ class FlipFlop:
     children: list[str]
     mem: bool = False
 
-    def process(self, p: str, pulse: bool):
+    def process(self, p: str, pulse: bool) -> Iterable[tuple[str, bool]]:
         if not pulse:
             self.mem = not self.mem
             return ((c, self.mem) for c in self.children)
@@ -24,7 +25,6 @@ class FlipFlop:
 class Conjunction:
     children: list[str]
     parents: dict[str, bool]
-    mem: bool = False
 
     def process(self, p: str, pulse: bool):
         self.parents[p] = pulse
@@ -88,6 +88,8 @@ def find_min(ps: set[str]):
     while ps:
         pushes += 1
         if not ps.isdisjoint(c_high := push_button(ps)):
+            print(pushes)
+            print(bin(pushes))
             yield pushes
         ps = ps - c_high
 
