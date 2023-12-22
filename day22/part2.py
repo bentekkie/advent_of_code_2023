@@ -2,7 +2,9 @@ import pathlib
 import os
 from dataclasses import dataclass
 from functools import cached_property, cache
-from networkx import DiGraph, descendants
+from networkx import DiGraph, descendants, all_simple_paths
+from collections import defaultdict
+from itertools import combinations, permutations
 
 
 THIS_DIR = pathlib.Path(__file__).parent.resolve()
@@ -81,27 +83,26 @@ with open(os.path.join(THIS_DIR, "input.txt")) as f:
 
 
 brick_order = sorted(block_by_id, key=lambda b: block_by_id[b].z_min)
-for brick in brick_order:
+for i, brick in enumerate(brick_order):
     block_by_id[brick].curr_z_min = (
         max(
-            (
-                block_by_id[b].z_max
-                for b in intersecting_blocks(brick)
-                if block_by_id[b].z_min < block_by_id[brick].z_min
-            ),
+            (block_by_id[b].z_max for b in brick_order[:i] if xy_intersects(brick, b)),
             default=0,
         )
         + 1
     )
 
 
-supporting = {b: [] for b in block_by_id}
-supported_by = {b: [] for b in block_by_id}
-for brick in brick_order:
-    for b in intersecting_blocks(brick):
-        if block_by_id[b].z_max + 1 == block_by_id[brick].z_min:
-            supporting[b].append(brick)
-            supported_by[brick].append(b)
+supporting = {
+    a: [
+        b
+        for b in block_by_id
+        if a != b
+        and xy_intersects(a, b)
+        and block_by_id[a].z_max + 1 == block_by_id[b].z_min
+    ]
+    for a in block_by_id
+}
 
 ground = "ground"
 g = DiGraph()
@@ -112,13 +113,10 @@ for b in block_by_id:
     for c in supporting[b]:
         g.add_edge(b, c)
 
-
-total = len(descendants(g, ground)) - 1
-s = 0
-for b in block_by_id:
-    if len(supporting[b]) == 0:
-        continue
-    gn = g.copy()
-    gn.remove_node(b)
-    s += total - len(descendants(gn, ground))
-print(s)
+paths: dict[int, set] = {}
+for path in all_simple_paths(g, ground, block_by_id):
+    if path[-1] in paths:
+        paths[path[-1]].intersection_update(path)
+    else:
+        paths[path[-1]] = set(path)
+print(sum(b in paths[c] for b, c in permutations(block_by_id, 2)))
