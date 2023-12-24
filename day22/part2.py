@@ -5,7 +5,7 @@ from functools import cached_property, cache
 from networkx import DiGraph, descendants, all_simple_paths
 from collections import defaultdict
 from itertools import combinations, permutations
-
+from time import time
 
 THIS_DIR = pathlib.Path(__file__).parent.resolve()
 
@@ -49,11 +49,6 @@ block_by_id: dict[int, Block] = {}
 
 
 @cache
-def intersecting_blocks(a):
-    return [b for b in block_by_id.keys() if a != b and xy_intersects(a, b)]
-
-
-@cache
 def xy_intersects(a_id: int, b_id: int):
     a = block_by_id[a_id]
     b = block_by_id[b_id]
@@ -74,13 +69,13 @@ def parse_coord(s: str):
     p0, p1, p2 = s.split(",")
     return (int(p0), int(p1), int(p2))
 
-
+start = time()
 with open(os.path.join(THIS_DIR, "input.txt")) as f:
     for row, line in enumerate(f.readlines()):
         p0, p1 = line.strip().split("~")
         c0, c1 = parse_coord(p0), parse_coord(p1)
         block_by_id[row] = Block(row, (c0, c1), min(c0[2], c1[2]))
-
+print("parse", time() - start)
 
 brick_order = sorted(block_by_id, key=lambda b: block_by_id[b].z_min)
 for i, brick in enumerate(brick_order):
@@ -91,18 +86,7 @@ for i, brick in enumerate(brick_order):
         )
         + 1
     )
-
-
-supporting = {
-    a: [
-        b
-        for b in block_by_id
-        if a != b
-        and xy_intersects(a, b)
-        and block_by_id[a].z_max + 1 == block_by_id[b].z_min
-    ]
-    for a in block_by_id
-}
+print("settle", time() - start)
 
 ground = "ground"
 g = DiGraph()
@@ -110,8 +94,10 @@ g = DiGraph()
 for b in block_by_id:
     if block_by_id[b].z_min == 1:
         g.add_edge(ground, b)
-    for c in supporting[b]:
-        g.add_edge(b, c)
+    for c in block_by_id:
+        if c != b and xy_intersects(c, b) and block_by_id[b].z_max + 1 == block_by_id[c].z_min:
+            g.add_edge(b, c)
+print("build graph", time() - start)
 
 paths: dict[int, set] = {}
 for path in all_simple_paths(g, ground, block_by_id):
@@ -119,4 +105,5 @@ for path in all_simple_paths(g, ground, block_by_id):
         paths[path[-1]].intersection_update(path)
     else:
         paths[path[-1]] = set(path)
+print("solve graph", time() - start)
 print(sum(b in paths[c] for b, c in permutations(block_by_id, 2)))
